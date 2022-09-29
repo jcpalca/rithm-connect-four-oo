@@ -8,16 +8,17 @@
  */
 
 
-
 class Game {
-  constructor(player1 = 1, player2 = 2, HEIGHT = 6, WIDTH = 7) {
+  constructor(player1 = 1, player2 = 2, height = 6, width = 7) {
     this.player1 = player1;
     this.player2 = player2;
-    this.HEIGHT = HEIGHT;
-    this.WIDTH = WIDTH;
+    this.height = height;
+    this.width = width;
     this.currPlayer = 1; // active player: 1 or 2
     this.board = []; // array of rows, each row is array of cells  (board[y][x])
-    // this.handleClick = handleClick.bind(""); // TODO: figure this out lol
+    this.handleClick = this.handleClick.bind(this);
+    this.makeBoard();
+    this.makeHtmlBoard();
   }
 
   /** makeBoard: create in-JS board structure:
@@ -25,8 +26,8 @@ class Game {
  */
 
   makeBoard() {
-    for (let y = 0; y < this.HEIGHT; y++) {
-      this.board.push(Array.from({ length: this.WIDTH }));
+    for (let y = 0; y < this.height; y++) {
+      this.board.push(Array.from({ length: this.width }));
     }
   }
 
@@ -39,9 +40,9 @@ class Game {
     const top = document.createElement('tr');
     top.setAttribute('id', 'column-top');
 
-    top.addEventListener('click', handleClick);
+    top.addEventListener('click', this.handleClick);
 
-    for (let x = 0; x < this.WIDTH; x++) {
+    for (let x = 0; x < this.width; x++) {
       const headCell = document.createElement('td');
       headCell.setAttribute('id', x);
       top.append(headCell);
@@ -50,24 +51,24 @@ class Game {
     gameBoard.append(top);
 
     // make main part of board
-    for (let y = 0; y < this.HEIGHT; y++) {
+    for (let y = 0; y < this.height; y++) {
       const row = document.createElement('tr');
 
-      for (let x = 0; x < this.WIDTH; x++) {
+      for (let x = 0; x < this.width; x++) {
         const cell = document.createElement('td');
         cell.setAttribute('id', `${y}-${x}`);
         row.append(cell);
       }
 
-      board.append(row);
+      gameBoard.append(row);
     }
   }
 
   /** findSpotForCol: given column x, return top empty y (null if filled) */
 
   findSpotForCol(x) {
-    for (let y = this.HEIGHT - 1; y >= 0; y--) {
-      if (!board[y][x]) {
+    for (let y = this.height - 1; y >= 0; y--) {
+      if (!this.board[y][x]) {
         return y;
       }
     }
@@ -99,23 +100,23 @@ class Game {
     const x = +evt.target.id;
 
     // get next spot in column (if none, ignore click)
-    const y = findSpotForCol(x);
+    const y = this.findSpotForCol(x);
     if (y === null) {
       return;
     }
 
     // place piece in board and add to HTML table
-    board[y][x] = this.currPlayer;
-    placeInTable(y, x);
+    this.board[y][x] = this.currPlayer;
+    this.placeInTable(y, x);
 
     // check for win
-    if (checkForWin()) {
-      return endGame(`Player ${this.currPlayer} won!`);
+    if (this.checkForWin()) {
+      return this.endGame(`Player ${this.currPlayer} won!`);
     }
 
     // check for tie
-    if (board.every(row => row.every(cell => cell))) {
-      return endGame('Tie!');
+    if (this.board.every(row => row.every(cell => cell))) {
+      return this.endGame('Tie!');
     }
 
     // switch players
@@ -125,7 +126,7 @@ class Game {
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
 
   checkForWin() {
-    function _win(cells) {
+    const _win = (cells) => {
       // Check four cells to see if they're all color of current player
       //  - cells: list of four (y, x) cells
       //  - returns true if all are legal coordinates & all match currPlayer
@@ -133,15 +134,15 @@ class Game {
       return cells.every(
         ([y, x]) =>
           y >= 0 &&
-          y < HEIGHT &&
+          y < this.height &&
           x >= 0 &&
-          x < WIDTH &&
-          board[y][x] === currPlayer
+          x < this.width &&
+          this.board[y][x] === this.currPlayer
       );
     }
 
-    for (let y = 0; y < this.HEIGHT; y++) {
-      for (let x = 0; x < this.WIDTH; x++) {
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
         // get "check list" of 4 cells (starting here) for each of the different
         // ways to win
         const horiz = [[y, x], [y, x + 1], [y, x + 2], [y, x + 3]];
