@@ -9,12 +9,12 @@
 
 
 class Game {
-  constructor(player1 = 1, player2 = 2, height = 6, width = 7) {
+  constructor(player1, player2, height = 6, width = 7) {
     this.player1 = player1;
     this.player2 = player2;
     this.height = height;
     this.width = width;
-    this.currPlayer = 1; // active player: 1 or 2
+    this.currPlayer = player1; // active player: 1 or 2
     this.board = []; // array of rows, each row is array of cells  (board[y][x])
     this.handleClick = this.handleClick.bind(this);
     this.makeBoard();
@@ -81,7 +81,7 @@ class Game {
   placeInTable(y, x) {
     const piece = document.createElement('div');
     piece.classList.add('piece');
-    piece.classList.add(`p${this.currPlayer}`);
+    piece.setAttribute('style', `background-color: ${this.currPlayer.color}`);
     piece.style.top = -50 * (y + 2);
 
     const spot = document.getElementById(`${y}-${x}`);
@@ -114,7 +114,7 @@ class Game {
 
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${this.currPlayer} won!`);
+      return this.endGame(`Player ${this.currPlayer.color} won!`);
     }
 
     // check for tie
@@ -123,7 +123,7 @@ class Game {
     }
 
     // switch players
-    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
+    this.currPlayer = this.currPlayer === this.player1 ? this.player2 : this.player1;
   }
 
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
@@ -162,17 +162,18 @@ class Game {
   }
 }
 
-// class Player {
-//   constructor (color1, color2) {
-//     this.color1 = document.getElementById("player-1").value;
-//     this.color2 = document.getElementById("player-2").value;
-//   }
-// }
+class Player {
+  constructor (color) {
+    this.color = color;
+  }
+}
 
 /** handleGame: handle click of the button to start the game */
 function handleGame(event) {
     event.preventDefault();
-    let newGame = new Game();
+    let player1 = new Player(document.getElementById("player-1").value);
+    let player2 = new Player(document.getElementById("player-2").value);
+    new Game(player1, player2);
 }
 
 
